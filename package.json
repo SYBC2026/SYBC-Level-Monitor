@@ -1,0 +1,12 @@
+{
+  "name": "sybc-level-monitor",
+  "version": "0.1.0",
+  "description": "SYBC Level Monitor Cloud Service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
