@@ -8,9 +8,12 @@ app.use(express.json());
 let latestLevel = {
     station: "SYBC-001",
     level: 2.456,
+    status: "Normal",
+    firmware: "1.1.3",
     updated: new Date().toISOString()
 };
 
+// Home Page
 app.get("/", (req, res) => {
     res.send(`
     <html>
@@ -40,7 +43,9 @@ app.get("/", (req, res) => {
 
         <div class="level">${latestLevel.level.toFixed(3)} m</div>
 
-        <p>Last Update</p>
+        <p>Status: ${latestLevel.status}</p>
+
+        <p>Firmware: ${latestLevel.firmware}</p>
 
         <h2>${new Date(latestLevel.updated).toLocaleString()}</h2>
 
@@ -49,6 +54,34 @@ app.get("/", (req, res) => {
     `);
 });
 
+// ESP32 uploads here
+app.post("/api/upload", (req, res) => {
+
+    latestLevel = {
+        station: req.body.station || "Unknown",
+        level: Number(req.body.level),
+        status: req.body.status || "Normal",
+        firmware: req.body.firmware || "",
+        updated: new Date().toISOString()
+    };
+
+    console.log("Upload received:", latestLevel);
+
+    res.json({
+        success: true
+    });
+
+});
+
+// Latest data
+app.get("/api/latest", (req, res) => {
+
+    res.json(latestLevel);
+
+});
+
 app.listen(PORT, () => {
+
     console.log("SYBC Level Monitor running");
+
 });
