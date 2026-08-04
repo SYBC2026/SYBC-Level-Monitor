@@ -48,7 +48,28 @@ app.get("/", (req, res) => {
         <p>Firmware: ${latestLevel.firmware}</p>
 
         <h2>${new Date(latestLevel.updated).toLocaleString()}</h2>
+<script>
+async function updateLevel() {
 
+    try {
+
+        const response = await fetch('/api/latest');
+        const data = await response.json();
+
+        document.getElementById('level').innerHTML =
+            data.level.toFixed(3) + " m";
+
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+
+updateLevel();
+
+setInterval(updateLevel, 10000);
+</script>
     </body>
     </html>
     `);
