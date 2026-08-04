@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 
         <p>Firmware: ${latestLevel.firmware}</p>
 
-        <h2>${new Date(latestLevel.updated).toLocaleString()}</h2>
+        <h2 id="updated">Loading...</h2>
 <script>
 async function updateLevel() {
 
@@ -58,7 +58,10 @@ async function updateLevel() {
 
         document.getElementById('level').innerHTML =
             data.level.toFixed(3) + " m";
-
+            
+document.getElementById('updated').innerHTML =
+    new Date(data.updated).toLocaleString();
+    
     }
     catch (err) {
         console.log(err);
