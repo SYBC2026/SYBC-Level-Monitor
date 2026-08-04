@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 
         <h1>SYBC Level Monitor</h1>
 
-        <div class="level">${latestLevel.level.toFixed(3)} m</div>
+        <div class="level" id="level">Loading...</div>
 
         <p>Status: ${latestLevel.status}</p>
 
