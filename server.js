@@ -43,6 +43,15 @@ app.get("/", (req, res) => {
 
         <div class="level" id="level">Loading...</div>
 
+        <h3>Status</h3>
+<div id="status">Loading...</div>
+
+<h3>Station</h3>
+<div id="station">Loading...</div>
+
+<h3>Firmware</h3>
+<div id="firmware">Loading...</div>
+
         <p>Status: ${latestLevel.status}</p>
 
         <p>Firmware: ${latestLevel.firmware}</p>
