@@ -70,6 +70,10 @@ async function updateLevel() {
             
 document.getElementById('updated').innerHTML =
     new Date(data.updated).toLocaleString();
+
+document.getElementById('status').innerHTML = data.status;
+document.getElementById('station').innerHTML = data.station;
+document.getElementById('firmware').innerHTML = data.firmware;
     
     }
     catch (err) {
