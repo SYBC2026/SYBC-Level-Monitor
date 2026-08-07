@@ -71,7 +71,30 @@ async function updateLevel() {
 document.getElementById('updated').innerHTML =
     new Date(data.updated).toLocaleString();
 
-document.getElementById('status').innerHTML = data.status;
+const statusBox = document.getElementById('status');
+
+statusBox.innerHTML = data.status;
+
+if (data.status === "Normal") {
+
+    statusBox.style.color = "#00cc44";
+
+}
+else if (data.status === "Warning") {
+
+    statusBox.style.color = "orange";
+
+}
+else if (data.status === "Alarm") {
+
+    statusBox.style.color = "red";
+
+}
+else {
+
+    statusBox.style.color = "grey";
+
+}
 document.getElementById('station').innerHTML = data.station;
 document.getElementById('firmware').innerHTML = data.firmware;
     
