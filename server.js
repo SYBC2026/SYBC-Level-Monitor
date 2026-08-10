@@ -4,6 +4,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+let levelHistory = [];
 let latestLevel = {
     station: "SYBC-001",
     level: 2.456,
@@ -143,7 +145,7 @@ app.post("/api/upload", (req, res) => {
         firmware: req.body.firmware || "",
         updated: new Date().toISOString()
     };
-
+levelHistory.push(latestLevel);
     console.log("Upload received:", latestLevel);
 
     res.json({
