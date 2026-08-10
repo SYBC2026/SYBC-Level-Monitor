@@ -73,14 +73,7 @@ async function updateLevel() {
             
 document.getElementById('updated').innerHTML =
     new Date(data.updated).toLocaleString();
-const nextUpload = new Date(data.updated).getTime() + 300000;
-const remaining = Math.max(0, nextUpload - Date.now());
-
-const minutes = Math.floor(remaining / 60000);
-const seconds = Math.floor((remaining % 60000) / 1000);
-
-document.getElementById('nextUpload').innerHTML =
-    minutes + ":" + seconds.toString().padStart(2, "0");
+nextUploadTime = new Date(data.updated).getTime() + 300000;
     
 
 const statusBox = document.getElementById('status');
@@ -125,6 +118,21 @@ setInterval(updateLevel, 10000);
     </html>
     `);
 });
+
+let nextUploadTime = 0;
+
+function updateCountdown() {
+
+    const remaining = Math.max(0, nextUploadTime - Date.now());
+
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+
+    document.getElementById('nextUpload').innerHTML =
+        minutes + ":" + seconds.toString().padStart(2, "0");
+}
+
+setInterval(updateCountdown, 1000);
 
 // ESP32 uploads here
 app.post("/api/upload", (req, res) => {
