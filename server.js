@@ -57,6 +57,9 @@ app.get("/", (req, res) => {
         <p>Firmware: ${latestLevel.firmware}</p>
 
         <h2 id="updated">Loading...</h2>
+<h3>Next Upload</h3>
+<div id="nextUpload">Calculating...</div>
+        
 <script>
 async function updateLevel() {
 
@@ -70,6 +73,15 @@ async function updateLevel() {
             
 document.getElementById('updated').innerHTML =
     new Date(data.updated).toLocaleString();
+const nextUpload = new Date(data.updated).getTime() + 300000;
+const remaining = Math.max(0, nextUpload - Date.now());
+
+const minutes = Math.floor(remaining / 60000);
+const seconds = Math.floor((remaining % 60000) / 1000);
+
+document.getElementById('nextUpload').innerHTML =
+    minutes + ":" + seconds.toString().padStart(2, "0");
+    
 
 const statusBox = document.getElementById('status');
 
