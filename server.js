@@ -137,7 +137,7 @@ setInterval(updateCountdown, 1000);
 
 // ESP32 uploads here
 app.post("/api/upload", (req, res) => {
-let levelHistory = [];
+
     latestLevel = {
         station: req.body.station || "Unknown",
         level: Number(req.body.level),
