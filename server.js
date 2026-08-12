@@ -152,7 +152,6 @@ levelHistory.push(latestLevel);
         success: true;
     });
 
-});
 
 // Latest data
 app.get("/api/latest", (req, res) => {
