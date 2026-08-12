@@ -149,7 +149,7 @@ levelHistory.push(latestLevel);
     console.log("Upload received:", latestLevel);
 
     res.json({
-        success: true
+        success: true;
     });
 
 });
