@@ -158,7 +158,10 @@ levelHistory.push(latestLevel);
 app.get("/api/latest", (req, res) => {
 
     res.json(latestLevel);
-
+// Historical data
+app.get("/api/history", (req, res) => {
+    res.json(levelHistory);
+});
 });
 
 app.listen(PORT, () => {
