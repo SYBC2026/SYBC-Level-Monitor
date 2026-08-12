@@ -151,7 +151,7 @@ levelHistory.push(latestLevel);
     res.json({
         success: true;
     });
-
+});
 
 // Latest data
 app.get("/api/latest", (req, res) => {
