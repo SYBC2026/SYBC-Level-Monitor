@@ -122,7 +122,19 @@ async function updateLevel() {
             document.getElementById('status');
 
         statusBox.innerHTML = data.status;
+const dataAge =
+    Date.now() - new Date(data.updated).getTime();
 
+const stale =
+    dataAge > (15 * 60 * 1000);
+
+if (stale) {
+
+    statusBox.innerHTML = "STALE - No recent data";
+    statusBox.style.color = "orange";
+
+}
+else
         if (data.status === "Normal") {
             statusBox.style.color = "#00cc44";
         }
