@@ -87,10 +87,7 @@ app.get("/", (req, res) => {
 <h3>Firmware</h3>
 <div id="firmware">Loading...</div>
 
-        <p>Status: ${latestLevel.status}</p>
-
-        <p>Firmware: ${latestLevel.firmware}</p>
-
+       
         <h2 id="updated">Loading...</h2>
 <h3>Next Upload</h3>
 <div id="nextUpload">Calculating...</div>
