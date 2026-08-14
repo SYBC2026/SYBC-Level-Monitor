@@ -13,9 +13,7 @@ pool.query('SELECT NOW()')
     .then(() => {
         console.log('Neon database connected');
     })
-    .catch((err) => {
-        console.log('Neon database connection failed:', err.message);
-    });
+   
 
 pool.query(`
     CREATE TABLE IF NOT EXISTS level_history (
