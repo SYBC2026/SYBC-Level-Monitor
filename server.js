@@ -179,9 +179,9 @@ async function updateHistoryChart() {
         const response = await fetch('/api/history');
         const history = await response.json();
 
-        const cutoff =
-            Date.now() - (24 * 60 * 60 * 1000);
-
+       const cutoff =
+    Date.now() - (7 * 24 * 60 * 60 * 1000);
+    
         const recent = history.filter(item =>
             new Date(item.updated).getTime() >= cutoff
         );
