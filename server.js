@@ -16,6 +16,27 @@ pool.query('SELECT NOW()')
     .catch((err) => {
         console.log('Neon database connection failed:', err.message);
     });
+
+pool.query(`
+    CREATE TABLE IF NOT EXISTS level_history (
+        id BIGSERIAL PRIMARY KEY,
+        station TEXT NOT NULL,
+        level DOUBLE PRECISION NOT NULL,
+        status TEXT,
+        firmware TEXT,
+        updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+`)
+    .then(() => {
+        console.log('level_history table ready');
+    })
+    .catch((err) => {
+        console.log('Table creation failed:', err.message);
+    });
+    })
+    .catch((err) => {
+        console.log('Neon database connection failed:', err.message);
+    });
 let levelHistory = [];
 let latestLevel = {
     station: "SYBC-001",
