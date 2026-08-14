@@ -68,6 +68,10 @@ app.get("/", (req, res) => {
     <canvas id="levelChart"></canvas>
 </div>      
 <script>
+<script>
+
+let nextUploadTime = 0;
+
 async function updateLevel() {
 
     try {
@@ -77,49 +81,75 @@ async function updateLevel() {
 
         document.getElementById('level').innerHTML =
             data.level.toFixed(3) + " m";
-            
-document.getElementById('updated').innerHTML =
-    new Date(data.updated).toLocaleString();
-nextUploadTime = new Date(data.updated).getTime() + 300000;
-    
 
-const statusBox = document.getElementById('status');
+        document.getElementById('updated').innerHTML =
+            new Date(data.updated).toLocaleString();
 
-statusBox.innerHTML = data.status;
+        // Next expected ESP32 upload = last upload + 5 minutes
+        nextUploadTime =
+            new Date(data.updated).getTime() + 300000;
 
-if (data.status === "Normal") {
+        const statusBox =
+            document.getElementById('status');
 
-    statusBox.style.color = "#00cc44";
+        statusBox.innerHTML = data.status;
 
-}
-else if (data.status === "Warning") {
+        if (data.status === "Normal") {
+            statusBox.style.color = "#00cc44";
+        }
+        else if (data.status === "Warning") {
+            statusBox.style.color = "orange";
+        }
+        else if (data.status === "Alarm") {
+            statusBox.style.color = "red";
+        }
+        else {
+            statusBox.style.color = "grey";
+        }
 
-    statusBox.style.color = "orange";
+        document.getElementById('station').innerHTML =
+            data.station;
 
-}
-else if (data.status === "Alarm") {
+        document.getElementById('firmware').innerHTML =
+            data.firmware;
 
-    statusBox.style.color = "red";
-
-}
-else {
-
-    statusBox.style.color = "grey";
-
-}
-document.getElementById('station').innerHTML = data.station;
-document.getElementById('firmware').innerHTML = data.firmware;
-    
     }
     catch (err) {
-        console.log(err);
+
+        console.log("Level update error:", err);
+
     }
+}
+
+
+function updateCountdown() {
+
+    const remaining =
+        Math.max(0, nextUploadTime - Date.now());
+
+    const minutes =
+        Math.floor(remaining / 60000);
+
+    const seconds =
+        Math.floor((remaining % 60000) / 1000);
+
+    document.getElementById('nextUpload').innerHTML =
+        minutes + ":" +
+        seconds.toString().padStart(2, "0");
 
 }
 
+
+// Get latest data immediately
 updateLevel();
 
+// Check the cloud for a new ESP32 upload every 10 seconds
 setInterval(updateLevel, 10000);
+
+// Move the countdown every second
+setInterval(updateCountdown, 1000);
+
+</script>
 </script>
     </body>
     </html>
