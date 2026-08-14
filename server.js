@@ -183,22 +183,43 @@ async function updateHistoryChart() {
                     }]
                 },
 
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
+              options: {
+    responsive: true,
+    maintainAspectRatio: true,
 
-                    scales: {
+    plugins: {
+        legend: {
+            labels: {
+                color: 'white',
+                font: {
+                    size: 16
+                }
+            }
+        }
+    },
+
+    scales: {
                         y: {
-                            title: {
-                                display: true,
-                                text: 'Level (m)'
-                            }
-                        },
+    ticks: {
+        color: 'white'
+    },
+    title: {
+        display: true,
+        text: 'Level (m)',
+        color: 'white'
+    }
+},
 
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Time'
+    ticks: {
+        color: 'white'
+    },
+    title: {
+        display: true,
+        text: 'Time',
+        color: 'white'
+    }
+}
                             }
                         }
                     }
