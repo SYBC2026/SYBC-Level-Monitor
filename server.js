@@ -289,7 +289,7 @@ setInterval(updateHistoryChart, 60000);
 
 
 // ESP32 uploads here
-app.post("/api/upload", (req, res) => {
+app.post("/api/upload", async (req, res) => {
 
     latestLevel = {
         station: req.body.station || "Unknown",
@@ -298,12 +298,43 @@ app.post("/api/upload", (req, res) => {
         firmware: req.body.firmware || "",
         updated: new Date().toISOString()
     };
-levelHistory.push(latestLevel);
+
+    levelHistory.push(latestLevel);
+
     console.log("Upload received:", latestLevel);
 
-    res.json({
-        success: true
-    });
+    try {
+
+        await pool.query(
+            `INSERT INTO level_history
+            (station, level, status, firmware, updated)
+            VALUES ($1, $2, $3, $4, $5)`,
+            [
+                latestLevel.station,
+                latestLevel.level,
+                latestLevel.status,
+                latestLevel.firmware,
+                latestLevel.updated
+            ]
+        );
+
+        console.log("Reading saved to Neon");
+
+        res.json({
+            success: true
+        });
+
+    }
+    catch (err) {
+
+        console.log("Neon save failed:", err.message);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
 });
 
 // Latest data
