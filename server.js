@@ -120,20 +120,7 @@ setInterval(updateLevel, 10000);
     `);
 });
 
-let nextUploadTime = 0;
 
-function updateCountdown() {
-
-    const remaining = Math.max(0, nextUploadTime - Date.now());
-
-    const minutes = Math.floor(remaining / 60000);
-    const seconds = Math.floor((remaining % 60000) / 1000);
-
-    document.getElementById('nextUpload').innerHTML =
-        minutes + ":" + seconds.toString().padStart(2, "0");
-}
-
-setInterval(updateCountdown, 1000);
 
 // ESP32 uploads here
 app.post("/api/upload", (req, res) => {
@@ -149,7 +136,7 @@ levelHistory.push(latestLevel);
     console.log("Upload received:", latestLevel);
 
     res.json({
-        success: true;
+        success: true
     });
 });
 
