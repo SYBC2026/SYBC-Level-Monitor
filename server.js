@@ -170,63 +170,59 @@ async function updateHistoryChart() {
 
         if (!levelChart) {
 
-            levelChart = new Chart(ctx, {
-                type: 'line',
+          levelChart = new Chart(ctx, {
+    type: 'line',
 
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Water Level (m)',
-                        data: levels,
-                        borderWidth: 2,
-                        tension: 0.25
-                    }]
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Water Level (m)',
+            data: levels,
+            borderWidth: 2,
+            tension: 0.25
+        }]
+    },
+
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'white',
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        },
+
+        scales: {
+            y: {
+                ticks: {
+                    color: 'white'
                 },
+                title: {
+                    display: true,
+                    text: 'Level (m)',
+                    color: 'white'
+                }
+            },
 
-              options: {
-    responsive: true,
-    maintainAspectRatio: true,
-
-    plugins: {
-        legend: {
-            labels: {
-                color: 'white',
-                font: {
-                    size: 16
+            x: {
+                ticks: {
+                    color: 'white'
+                },
+                title: {
+                    display: true,
+                    text: 'Time',
+                    color: 'white'
                 }
             }
         }
-    },
-
-    scales: {
-                        y: {
-    ticks: {
-        color: 'white'
-    },
-    title: {
-        display: true,
-        text: 'Level (m)',
-        color: 'white'
     }
-},
-
-                        x: {
-    ticks: {
-        color: 'white'
-    },
-    title: {
-        display: true,
-        text: 'Time',
-        color: 'white'
-    }
-}
-                            }
-                        }
-                    }
-                }
-            });
-
-        }
+});
         else {
 
             levelChart.data.labels = labels;
