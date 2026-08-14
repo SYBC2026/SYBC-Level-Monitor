@@ -138,16 +138,97 @@ function updateCountdown() {
         seconds.toString().padStart(2, "0");
 
 }
+let levelChart = null;
+
+async function updateHistoryChart() {
+
+    try {
+
+        const response = await fetch('/api/history');
+        const history = await response.json();
+
+        const cutoff =
+            Date.now() - (24 * 60 * 60 * 1000);
+
+        const recent = history.filter(item =>
+            new Date(item.updated).getTime() >= cutoff
+        );
+
+        const labels = recent.map(item =>
+            new Date(item.updated).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        );
+
+        const levels = recent.map(item =>
+            Number(item.level)
+        );
+
+        const ctx =
+            document.getElementById('levelChart');
+
+        if (!levelChart) {
+
+            levelChart = new Chart(ctx, {
+                type: 'line',
+
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Water Level (m)',
+                        data: levels,
+                        borderWidth: 2,
+                        tension: 0.25
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Level (m)'
+                            }
+                        },
+
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    }
+                }
+            });
+
+        }
+        else {
+
+            levelChart.data.labels = labels;
+            levelChart.data.datasets[0].data = levels;
+            levelChart.update();
+
+        }
+
+    }
+    catch (err) {
+
+        console.log("History chart error:", err);
+
+    }
+}
 
 
-// Get latest data immediately
 updateLevel();
+updateHistoryChart();
 
-// Check the cloud for a new ESP32 upload every 10 seconds
 setInterval(updateLevel, 10000);
-
-// Move the countdown every second
 setInterval(updateCountdown, 1000);
+setInterval(updateHistoryChart, 60000);
 
 </script>
 
