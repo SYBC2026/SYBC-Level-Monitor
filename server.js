@@ -53,6 +53,9 @@ app.get("/", (req, res) => {
     <html>
     <head>
         <title>SYBC Level Monitor</title>
+        <html>
+    <head>
+        <title>SYBC Level Monitor</title>
         <style>
             body{
                 font-family:Arial;
@@ -69,6 +72,35 @@ app.get("/", (req, res) => {
                 font-weight:bold;
             }
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+
+    <body>
+
+        <h1>SYBC Level Monitor</h1>
+
+        <div class="level" id="level">Loading...</div>
+
+        <h3>Status</h3>
+<div id="status">Loading...</div>
+
+<h3>Station</h3>
+<div id="station">Loading...</div>
+
+<h3>Firmware</h3>
+<div id="firmware">Loading...</div>
+
+       
+        <h2 id="updated">Loading...</h2>
+<h3>Next Upload</h3>
+<div id="nextUpload">Calculating...</div>
+  <h2>Last 7 days</h2>
+
+<div style="max-width:900px; margin:30px auto;">
+    <canvas id="levelChart"></canvas>
+</div>      
+<script>
+
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
 
