@@ -344,10 +344,36 @@ app.get("/api/latest", (req, res) => {
 
 });   
 // Historical data
-app.get("/api/history", (req, res) => {
-    res.json(levelHistory);
-});
+app.get("/api/history", async (req, res) => {
 
+    try {
+
+        const result = await pool.query(`
+            SELECT
+                station,
+                level,
+                status,
+                firmware,
+                updated
+            FROM level_history
+            WHERE updated >= NOW() - INTERVAL '24 hours'
+            ORDER BY updated ASC
+        `);
+
+        res.json(result.rows);
+
+    }
+    catch (err) {
+
+        console.log("History read failed:", err.message);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
 
 app.listen(PORT, () => {
 
