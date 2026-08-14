@@ -68,7 +68,7 @@ app.get("/", (req, res) => {
     <canvas id="levelChart"></canvas>
 </div>      
 <script>
-<script>
+
 
 let nextUploadTime = 0;
 
@@ -150,7 +150,7 @@ setInterval(updateLevel, 10000);
 setInterval(updateCountdown, 1000);
 
 </script>
-</script>
+
     </body>
     </html>
     `);
