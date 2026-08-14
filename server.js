@@ -186,13 +186,13 @@ async function updateHistoryChart() {
             new Date(item.updated).getTime() >= cutoff
         );
 
-        const labels = recent.map(item =>
-            new Date(item.updated).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            })
-        );
-
+       const labels = recent.map(item =>
+    new Date(item.updated).toLocaleString([], {
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    })
+);
         const levels = recent.map(item =>
             Number(item.level)
         );
