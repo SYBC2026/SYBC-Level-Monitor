@@ -37,6 +37,7 @@ app.get("/", (req, res) => {
                 font-weight:bold;
             }
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
 
     <body>
@@ -61,7 +62,11 @@ app.get("/", (req, res) => {
         <h2 id="updated">Loading...</h2>
 <h3>Next Upload</h3>
 <div id="nextUpload">Calculating...</div>
-        
+  <h2>Last 24 Hours</h2>
+
+<div style="max-width:900px; margin:30px auto;">
+    <canvas id="levelChart"></canvas>
+</div>      
 <script>
 async function updateLevel() {
 
