@@ -243,15 +243,18 @@ async function updateHistoryChart() {
             },
 
             x: {
-                ticks: {
-                    color: 'white'
-                },
-                title: {
-                    display: true,
-                    text: 'Time',
-                    color: 'white'
-                }
-            }
+    ticks: {
+        color: 'white',
+        autoSkip: true,
+        maxTicksLimit: 10,
+        maxRotation: 0
+    },
+    title: {
+        display: true,
+        text: 'Time',
+        color: 'white'
+    }
+}
         }
     }
 });
