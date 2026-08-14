@@ -45,12 +45,7 @@ let latestLevel = {
     firmware: "1.1.3",
     updated: new Date().toISOString()
 };
-    station: "SYBC-001",
-    level: 2.456,
-    status: "Normal",
-    firmware: "1.1.3",
-    updated: new Date().toISOString()
-};
+    
 
 // Home Page
 app.get("/", (req, res) => {
