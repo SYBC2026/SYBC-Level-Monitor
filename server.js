@@ -255,6 +255,7 @@ async function updateHistoryChart() {
         }
     }
 });
+}
         else {
 
             levelChart.data.labels = labels;
