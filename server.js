@@ -94,7 +94,7 @@ app.get("/", (req, res) => {
         <h2 id="updated">Loading...</h2>
 <h3>Next Upload</h3>
 <div id="nextUpload">Calculating...</div>
-  <h2>Last 24 Hours</h2>
+  <h2>Last 7 days</h2>
 
 <div style="max-width:900px; margin:30px auto;">
     <canvas id="levelChart"></canvas>
@@ -356,7 +356,7 @@ app.get("/api/history", async (req, res) => {
                 firmware,
                 updated
             FROM level_history
-            WHERE updated >= NOW() - INTERVAL '24 hours'
+            WHERE updated >= NOW() - INTERVAL '7 days'
             ORDER BY updated ASC
         `);
 
