@@ -1,10 +1,12 @@
 // SYBC Level Monitor - history enabled
 const express = require('express');
 const { Pool } = require('pg');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
@@ -13,7 +15,9 @@ pool.query('SELECT NOW()')
     .then(() => {
         console.log('Neon database connected');
     })
-   
+    .catch((err) => {
+        console.log('Neon database connection failed:', err.message);
+    });
 
 pool.query(`
     CREATE TABLE IF NOT EXISTS level_history (
@@ -31,12 +35,16 @@ pool.query(`
     .catch((err) => {
         console.log('Table creation failed:', err.message);
     });
-    })
-    .catch((err) => {
-        console.log('Neon database connection failed:', err.message);
-    });
+
 let levelHistory = [];
+
 let latestLevel = {
+    station: "SYBC-001",
+    level: 2.456,
+    status: "Normal",
+    firmware: "1.1.3",
+    updated: new Date().toISOString()
+};
     station: "SYBC-001",
     level: 2.456,
     status: "Normal",
