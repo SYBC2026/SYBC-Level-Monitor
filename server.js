@@ -54,51 +54,108 @@ app.get("/", (req, res) => {
     <head>
         <title>SYBC Level Monitor</title>
         <html>
-    <head>
-        <title>SYBC Level Monitor</title>
-        <style>
-            body{
-                font-family:Arial;
-                text-align:center;
-                background:#0b4f6c;
-                color:white;
-                margin-top:60px;
+    <html>
+<head>
+    <title>SYBC Level Monitor</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #0b4f6c;
+            color: white;
+            margin: 0;
+            padding: 24px 16px 40px;
+        }
+
+        h1 {
+            font-size: 42px;
+            margin: 10px 0 28px;
+        }
+
+        .level {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 10px auto 24px;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+
+        h3 {
+            margin: 18px 0 6px;
+        }
+
+        #status {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #station,
+        #firmware,
+        #updated,
+        #nextUpload {
+            font-size: 20px;
+        }
+
+        #levelChart {
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 32px;
             }
-            h1{
-                font-size:48px;
+
+            .level {
+                font-size: 56px;
             }
-            .level{
-                font-size:72px;
-                font-weight:bold;
+
+            #status {
+                font-size: 22px;
             }
-        </style>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    </head>
 
-    <body>
+            #station,
+            #firmware,
+            #updated,
+            #nextUpload {
+                font-size: 18px;
+            }
+        }
+    </style>
 
-        <h1>SYBC Level Monitor</h1>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-        <div class="level" id="level">Loading...</div>
+<body>
 
-        <h3>Status</h3>
-<div id="status">Loading...</div>
+    <h1>SYBC Level Monitor</h1>
 
-<h3>Station</h3>
-<div id="station">Loading...</div>
+    <div class="level" id="level">Loading...</div>
 
-<h3>Firmware</h3>
-<div id="firmware">Loading...</div>
+    <h3>Status</h3>
+    <div id="status">Loading...</div>
 
-       
-        <h2 id="updated">Loading...</h2>
-<h3>Next Upload</h3>
-<div id="nextUpload">Calculating...</div>
-  <h2>Last 7 days</h2>
+    <h3>Station</h3>
+    <div id="station">Loading...</div>
 
-<div style="max-width:900px; margin:30px auto;">
-    <canvas id="levelChart"></canvas>
-</div>      
+    <h3>Firmware</h3>
+    <div id="firmware">Loading...</div>
+
+    <h2 id="updated">Loading...</h2>
+
+    <h3>Next Upload</h3>
+    <div id="nextUpload">Calculating...</div>
+
+    <h2>Last 7 days</h2>
+
+    <div style="max-width:900px; margin:30px auto;">
+        <canvas id="levelChart"></canvas>
+    </div>
+
 <script>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
