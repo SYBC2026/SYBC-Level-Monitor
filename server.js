@@ -40,7 +40,7 @@ let levelHistory = [];
 
 let latestLevel = {
     station: "SYBC-001",
-    level: 2.456,
+    level: 1.220,
     status: "Normal",
     firmware: "1.1.3",
     updated: new Date().toISOString()
