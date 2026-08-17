@@ -11,40 +11,89 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-pool.query('SELECT NOW()')
-    .then(() => {
-        console.log('Neon database connected');
-    })
-    .catch((err) => {
-        console.log('Neon database connection failed:', err.message);
-    });
-
-pool.query(`
-    CREATE TABLE IF NOT EXISTS level_history (
-        id BIGSERIAL PRIMARY KEY,
-        station TEXT NOT NULL,
-        level DOUBLE PRECISION NOT NULL,
-        status TEXT,
-        firmware TEXT,
-        updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-`)
-    .then(() => {
-        console.log('level_history table ready');
-    })
-    .catch((err) => {
-        console.log('Table creation failed:', err.message);
-    });
-
 let levelHistory = [];
 
+// Safe temporary value while Neon is being checked.
+// This will be replaced by the most recent real reading.
 let latestLevel = {
     station: "SYBC-001",
-    level: 1.220,
-    status: "Normal",
-    firmware: "1.1.3",
-    updated: new Date().toISOString()
+    level: 0.000,
+    status: "Starting",
+    firmware: "",
+    updated: "1970-01-01T00:00:00.000Z"
 };
+
+async function initializeDatabase() {
+
+    try {
+
+        // Check Neon connection
+        await pool.query('SELECT NOW()');
+        console.log('Neon database connected');
+
+        // Make sure the history table exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS level_history (
+                id BIGSERIAL PRIMARY KEY,
+                station TEXT NOT NULL,
+                level DOUBLE PRECISION NOT NULL,
+                status TEXT,
+                firmware TEXT,
+                updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        `);
+
+        console.log('level_history table ready');
+
+        // Load the most recent real reading from Neon
+        const result = await pool.query(`
+            SELECT
+                station,
+                level,
+                status,
+                firmware,
+                updated
+            FROM level_history
+            ORDER BY updated DESC
+            LIMIT 1
+        `);
+
+        if (result.rows.length > 0) {
+
+            const row = result.rows[0];
+
+            latestLevel = {
+                station: row.station,
+                level: Number(row.level),
+                status: row.status || "Normal",
+                firmware: row.firmware || "",
+                updated: new Date(row.updated).toISOString()
+            };
+
+            console.log(
+                'Latest reading loaded from Neon:',
+                latestLevel
+            );
+
+        }
+        else {
+
+            console.log('No historical readings found in Neon');
+
+        }
+
+    }
+    catch (err) {
+
+        console.log(
+            'Database initialization failed:',
+            err.message
+        );
+
+    }
+}
+
+initializeDatabase();
     
 
 // Home Page
