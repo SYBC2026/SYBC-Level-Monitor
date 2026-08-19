@@ -100,307 +100,540 @@ initializeDatabase();
 app.get("/", (req, res) => {
     res.send(`
    <html>
+<!DOCTYPE html>
+<html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>SYBC Level Monitor</title>
 
     <style>
+        :root {
+            --accent: #ff8c00;
+            --bg: #0b4f6c;
+            --card-bg: #0e5f80;
+            --text-light: #ffffff;
+            --text-muted: #d0e6f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            background: #0b4f6c;
-            color: white;
+            background: var(--bg);
+            color: var(--text-light);
             margin: 0;
-            padding: 24px 16px 40px;
+            padding: 20px;
         }
 
         h1 {
-            font-size: 42px;
-            margin: 10px 0 28px;
+            text-align: center;
+            font-size: 40px;
+            margin: 10px 0 25px;
+            color: var(--accent);
         }
 
-        .level {
-            font-size: 72px;
+        .dashboard {
+            max-width: 1100px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+            color: var(--accent);
+        }
+
+        .value {
+            font-size: 48px;
             font-weight: bold;
-            margin: 10px auto 24px;
+            margin-top: 10px;
         }
 
-        h2 {
-            margin-top: 30px;
-        }
-
-        h3 {
-            margin: 18px 0 6px;
-        }
-
-        #status {
-            font-size: 24px;
+        .status {
+            font-size: 28px;
             font-weight: bold;
+            margin-top: 10px;
         }
 
-        #station,
-        #firmware,
-        #updated,
-        #nextUpload {
+        .detail {
             font-size: 20px;
+            color: var(--text-light);
+            margin-top: 10px;
+        }
+
+        .chart-card {
+            grid-column: 1 / -1;
+        }
+
+        #chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
         }
 
         #levelChart {
-            background: rgba(255,255,255,0.04);
-            border-radius: 12px;
-            padding: 10px;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .fullscreen-chart #chart-container {
+            width: 100vw;
+            height: 100vh;
         }
 
         @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
             h1 {
-                font-size: 32px;
+                font-size: 30px;
             }
 
-            .level {
-                font-size: 56px;
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 12px;
             }
 
-            #status {
-                font-size: 22px;
+            .value {
+                font-size: 42px;
             }
 
-            #station,
-            #firmware,
-            #updated,
-            #nextUpload {
+            .status {
+                font-size: 24px;
+            }
+
+            .detail {
                 font-size: 18px;
+            }
+
+            #chart-container {
+                height: 320px;
             }
         }
     </style>
 
+    <link rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-    <h1>SYBC Level Monitor</h1>
+<h1>SYBC Level Monitor</h1>
 
-    <div class="level" id="level">Loading...</div>
+<div class="dashboard">
 
-    <h3>Status</h3>
-    <div id="status">Loading...</div>
-
-    <h3>Station</h3>
-    <div id="station">Loading...</div>
-
-    <h3>Firmware</h3>
-    <div id="firmware">Loading...</div>
-
-    <h2 id="updated">Loading...</h2>
-
-    <h3>Next Upload</h3>
-    <div id="nextUpload">Calculating...</div>
-
-    <h2>Last 7 days</h2>
-
-    <div style="max-width:900px; margin:30px auto;">
-        <canvas id="levelChart"></canvas>
+    <div class="card">
+        <h2>Current Level</h2>
+        <div class="value" id="level">Loading...</div>
     </div>
+
+    <div class="card">
+        <h2>Status</h2>
+        <div class="status" id="status">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h2>Station</h2>
+        <div class="detail" id="station">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h2>Firmware</h2>
+        <div class="detail" id="firmware">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h2>Last Updated</h2>
+        <div class="detail" id="updated">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h2>Next Upload</h2>
+        <div class="detail" id="nextUpload">Calculating...</div>
+    </div>
+
+    <div class="card chart-card">
+        <h2>Last 7 Days</h2>
+
+        <div id="chart-container">
+            <canvas id="levelChart"></canvas>
+        </div>
+    </div>
+
+</div>
 
 <script>
 
-
 let nextUploadTime = 0;
+let levelChart = null;
+
+
+/* ---------------- LIVE DATA ---------------- */
+
+async function fetchLatest() {
+
+    const response = await fetch('/api/latest');
+
+    if (!response.ok) {
+        throw new Error('Latest data request failed');
+    }
+
+    return await response.json();
+}
+
+
+async function fetchHistory() {
+
+    const response = await fetch('/api/history');
+
+    if (!response.ok) {
+        throw new Error('History request failed');
+    }
+
+    return await response.json();
+}
+
+
+/* ---------------- CURRENT LEVEL ---------------- */
 
 async function updateLevel() {
 
     try {
 
-        const response = await fetch('/api/latest');
-        const data = await response.json();
+        const data = await fetchLatest();
+
+        const level = Number(data.level);
 
         document.getElementById('level').innerHTML =
-            data.level.toFixed(3) + " m";
+            level.toFixed(3) + ' m';
+
+        const updatedTime =
+            new Date(data.updated).getTime();
 
         document.getElementById('updated').innerHTML =
             new Date(data.updated).toLocaleString();
 
-        // Next expected ESP32 upload = last upload + 5 minutes
         nextUploadTime =
-            new Date(data.updated).getTime() + 300000;
+            updatedTime + 300000;
+
+        document.getElementById('station').innerHTML =
+            data.station || 'Unknown';
+
+        document.getElementById('firmware').innerHTML =
+            data.firmware || 'Unknown';
 
         const statusBox =
             document.getElementById('status');
 
-        statusBox.innerHTML = data.status;
-const dataAge =
-    Date.now() - new Date(data.updated).getTime();
+        const dataAge =
+            Date.now() - updatedTime;
 
-const stale =
-    dataAge > (15 * 60 * 1000);
+        const stale =
+            dataAge > (15 * 60 * 1000);
 
-if (stale) {
+        if (stale) {
 
-    statusBox.innerHTML = "STALE - No recent data";
-    statusBox.style.color = "orange";
+            statusBox.innerHTML =
+                'STALE - No recent data';
 
-}
-else
-        if (data.status === "Normal") {
-            statusBox.style.color = "#00cc44";
+            statusBox.style.color =
+                'orange';
+
         }
-        else if (data.status === "Warning") {
-            statusBox.style.color = "orange";
+        else if (data.status === 'Normal') {
+
+            statusBox.innerHTML = 'Normal';
+            statusBox.style.color = '#00ff66';
+
         }
-        else if (data.status === "Alarm") {
-            statusBox.style.color = "red";
+        else if (data.status === 'Warning') {
+
+            statusBox.innerHTML = 'Warning';
+            statusBox.style.color = '#ffb000';
+
+        }
+        else if (data.status === 'Alarm') {
+
+            statusBox.innerHTML = 'ALARM';
+            statusBox.style.color = '#ff4040';
+
         }
         else {
-            statusBox.style.color = "grey";
+
+            statusBox.innerHTML =
+                data.status || 'Unknown';
+
+            statusBox.style.color =
+                '#d0e6f0';
+
         }
-
-        document.getElementById('station').innerHTML =
-            data.station;
-
-        document.getElementById('firmware').innerHTML =
-            data.firmware;
 
     }
     catch (err) {
 
-        console.log("Level update error:", err);
+        console.log(
+            'Level update error:',
+            err
+        );
 
     }
 }
 
 
+/* ---------------- COUNTDOWN ---------------- */
+
 function updateCountdown() {
 
+    if (!nextUploadTime) {
+
+        document.getElementById('nextUpload').innerHTML =
+            'Waiting...';
+
+        return;
+    }
+
     const remaining =
-        Math.max(0, nextUploadTime - Date.now());
+        Math.max(
+            0,
+            nextUploadTime - Date.now()
+        );
 
     const minutes =
-        Math.floor(remaining / 60000);
+        Math.floor(
+            remaining / 60000
+        );
 
     const seconds =
-        Math.floor((remaining % 60000) / 1000);
+        Math.floor(
+            (remaining % 60000) / 1000
+        );
 
     document.getElementById('nextUpload').innerHTML =
-        minutes + ":" +
-        seconds.toString().padStart(2, "0");
-
+        minutes +
+        ':' +
+        seconds.toString().padStart(2, '0');
 }
-let levelChart = null;
+
+
+/* ---------------- 7 DAY CHART ---------------- */
 
 async function updateHistoryChart() {
 
     try {
 
-        const response = await fetch('/api/history');
-        const history = await response.json();
+        const history =
+            await fetchHistory();
 
-       const cutoff =
-    Date.now() - (7 * 24 * 60 * 60 * 1000);
-    
-        const recent = history.filter(item =>
-            new Date(item.updated).getTime() >= cutoff
-        );
+        const cutoff =
+            Date.now() -
+            (7 * 24 * 60 * 60 * 1000);
 
-       const labels = recent.map(item =>
-    new Date(item.updated).toLocaleString([], {
-        weekday: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-    })
-);
-        const levels = recent.map(item =>
-            Number(item.level)
-        );
+        const recent =
+            history.filter(item =>
+                new Date(
+                    item.updated
+                ).getTime() >= cutoff
+            );
+
+        const labels =
+            recent.map(item =>
+                new Date(
+                    item.updated
+                ).toLocaleString([], {
+                    weekday: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            );
+
+        const levels =
+            recent.map(item =>
+                Number(item.level)
+            );
 
         const ctx =
-            document.getElementById('levelChart');
+            document
+                .getElementById('levelChart')
+                .getContext('2d');
 
         if (!levelChart) {
 
-          levelChart = new Chart(ctx, {
-    type: 'line',
+            levelChart =
+                new Chart(ctx, {
 
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Water Level (m)',
-            data: levels,
-            borderWidth: 2,
-            tension: 0.25
-        }]
-    },
+                    type: 'line',
 
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
+                    data: {
 
-        plugins: {
-            legend: {
-                labels: {
-                    color: 'white',
-                    font: {
-                        size: 16
+                        labels: labels,
+
+                        datasets: [{
+                            label: 'Water Level (m)',
+                            data: levels,
+                            borderColor: '#ff8c00',
+                            backgroundColor: 'rgba(255,140,0,0.15)',
+                            borderWidth: 3,
+                            pointRadius: 2,
+                            pointHoverRadius: 5,
+                            tension: 0.25,
+                            fill: false
+                        }]
+                    },
+
+                    options: {
+
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16
+                                    }
+                                }
+                            }
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                ticks: {
+                                    color: 'white'
+                                },
+
+                                grid: {
+                                    color: 'rgba(255,255,255,0.15)'
+                                },
+
+                                title: {
+                                    display: true,
+                                    text: 'Level (m)',
+                                    color: 'white'
+                                }
+                            },
+
+                            x: {
+
+                                ticks: {
+                                    color: 'white',
+                                    autoSkip: true,
+                                    maxTicksLimit: 10,
+                                    maxRotation: 0
+                                },
+
+                                grid: {
+                                    color: 'rgba(255,255,255,0.08)'
+                                },
+
+                                title: {
+                                    display: true,
+                                    text: 'Time',
+                                    color: 'white'
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        },
+                });
 
-        scales: {
-            y: {
-                ticks: {
-                    color: 'white'
-                },
-                title: {
-                    display: true,
-                    text: 'Level (m)',
-                    color: 'white'
-                }
-            },
-
-            x: {
-    ticks: {
-        color: 'white',
-        autoSkip: true,
-        maxTicksLimit: 10,
-        maxRotation: 0
-    },
-    title: {
-        display: true,
-        text: 'Time',
-        color: 'white'
-    }
-}
         }
-    }
-});
-}
         else {
 
-            levelChart.data.labels = labels;
-            levelChart.data.datasets[0].data = levels;
-            levelChart.update();
+            levelChart.data.labels =
+                labels;
 
+            levelChart.data.datasets[0].data =
+                levels;
+
+            levelChart.update();
         }
 
     }
     catch (err) {
 
-        console.log("History chart error:", err);
+        console.log(
+            'History chart error:',
+            err
+        );
 
     }
 }
 
 
+/* ---------------- START ---------------- */
+
 updateLevel();
 updateHistoryChart();
+updateCountdown();
 
-setInterval(updateLevel, 10000);
-setInterval(updateCountdown, 1000);
-setInterval(updateHistoryChart, 60000);
+setInterval(
+    updateLevel,
+    10000
+);
+
+setInterval(
+    updateCountdown,
+    1000
+);
+
+setInterval(
+    updateHistoryChart,
+    60000
+);
+
+
+/* ---------------- FULLSCREEN SUPPORT ---------------- */
+
+window.addEventListener(
+    'message',
+    (event) => {
+
+        if (event.data === 'expandChart') {
+
+            document.body.classList.add(
+                'fullscreen-chart'
+            );
+
+            if (levelChart) {
+                levelChart.resize();
+            }
+        }
+
+        if (event.data === 'closeChart') {
+
+            document.body.classList.remove(
+                'fullscreen-chart'
+            );
+
+            if (levelChart) {
+                levelChart.resize();
+            }
+        }
+    }
+);
 
 </script>
 
-    </body>
-    </html>
+</body>
+</html>
     `);
 });
 
