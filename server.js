@@ -329,7 +329,7 @@ async function updateLevel() {
             new Date(data.updated).toLocaleString();
 
         nextUploadTime =
-            updatedTime + 300000;
+            updatedTime + (30 * 60 *1000); // time between updates
 
         document.getElementById('station').innerHTML =
             data.station || 'Unknown';
