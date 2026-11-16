@@ -691,6 +691,48 @@ app.post("/api/upload", async (req, res) => {
 
 });
 
+// Latest data
+app.get("/api/latest", (req, res) => {
+
+    res.json(latestLevel);
+
+});
+
+
+// Historical data
+app.get("/api/history", async (req, res) => {
+
+    try {
+
+        const result = await pool.query(`
+            SELECT
+                station,
+                level,
+                status,
+                updated
+            FROM level_history
+            WHERE updated >= NOW() - INTERVAL '7 days'
+            ORDER BY updated ASC
+        `);
+
+        res.json(result.rows);
+
+    }
+    catch (err) {
+
+        console.log(
+            "History read failed:",
+            err.message
+        );
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 app.listen(PORT, () => {
 
     console.log("SYBC Level Monitor running");
