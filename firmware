@@ -641,47 +641,38 @@ window.addEventListener(
 
 // ESP32 uploads here
 app.post("/api/upload", async (req, res) => {
+   ...
+});
 
-    const level = Number(req.body.level);
+// Latest data
+app.get("/api/latest", (req, res) => {
 
-    latestLevel = {
-        station: req.body.station || "Unknown",
-        level,
-        status: calculateStatus(level),
-        updated: new Date().toISOString()
-    };
+    res.json(latestLevel);
 
-    console.log(
-        "Upload received:",
-        latestLevel
-    );
+});
+
+// Historical data
+app.get("/api/history", async (req, res) => {
 
     try {
 
-        await pool.query(
-            `INSERT INTO level_history
-            (station, level, status, updated)
-            VALUES ($1, $2, $3, $4)`,
-            [
-                latestLevel.station,
-                latestLevel.level,
-                latestLevel.status,
-                latestLevel.updated
-            ]
-        );
+        const result = await pool.query(`
+            SELECT
+                station,
+                level,
+                status,
+                updated
+            FROM level_history
+            WHERE updated >= NOW() - INTERVAL '7 days'
+            ORDER BY updated ASC
+        `);
 
-        console.log("Reading saved to Neon");
+        res.json(result.rows);
 
-        res.json({
-            success: true
-        });
+    }
+    catch (err) {
 
-    } catch (err) {
-
-        console.log(
-            "Neon save failed:",
-            err.message
-        );
+        console.log("History read failed:", err.message);
 
         res.status(500).json({
             success: false
