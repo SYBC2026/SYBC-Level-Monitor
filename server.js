@@ -641,7 +641,42 @@ window.addEventListener(
 
 // ESP32 uploads here
 app.post("/api/upload", async (req, res) => {
-   ...
+
+    const level = Number(req.body.level);
+
+    latestLevel = {
+        station: req.body.station || "Unknown",
+        level,
+        status: calculateStatus(level),
+        updated: new Date().toISOString()
+    };
+
+    try {
+
+        await pool.query(
+            `INSERT INTO level_history
+            (station, level, status, updated)
+            VALUES ($1, $2, $3, $4)`,
+            [
+                latestLevel.station,
+                latestLevel.level,
+                latestLevel.status,
+                latestLevel.updated
+            ]
+        );
+
+        res.json({ success: true });
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 });
 
 // Latest data
