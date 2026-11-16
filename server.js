@@ -51,7 +51,6 @@ async function initializeDatabase() {
                 station,
                 level,
                 status,
-                firmware,
                 updated
             FROM level_history
             ORDER BY updated DESC
