@@ -59,8 +59,8 @@ async function initializeDatabase() {
 
         if (result.rows.length > 0) {
 
-            const LOW_THRESHOLD = 1.0;
-const HIGH_THRESHOLD = 3.0;
+            const LOW_THRESHOLD = 0.600;
+const HIGH_THRESHOLD = 0.700;
 
 const level = Number(row.level);
 
