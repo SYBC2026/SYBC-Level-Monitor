@@ -59,20 +59,31 @@ async function initializeDatabase() {
 
         if (result.rows.length > 0) {
 
-            const row = result.rows[0];
+            const LOW_THRESHOLD = 1.0;
+const HIGH_THRESHOLD = 3.0;
 
-            latestLevel = {
-                station: row.station,
-                level: Number(row.level),
-                status: row.status || "Normal",
-                firmware: row.firmware || "",
-                updated: new Date(row.updated).toISOString()
-            };
+const level = Number(row.level);
 
-            console.log(
-                'Latest reading loaded from Neon:',
-                latestLevel
-            );
+let status = "Normal";
+let statusColor = "#28a745"; // Green
+
+if (level < LOW_THRESHOLD) {
+    status = "Low";
+    statusColor = "#007bff"; // Blue
+} else if (level > HIGH_THRESHOLD) {
+    status = "High";
+    statusColor = "#dc3545"; // Red
+}
+
+latestLevel = {
+    station: row.station,
+    level,
+    status,
+    statusColor,
+    firmware: row.firmware || "",
+    updated: new Date(row.updated).toISOString()
+};
+
 
         }
         else {
