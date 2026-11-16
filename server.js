@@ -11,41 +11,49 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-let levelHistory = [];
+// Status thresholds
+const LOW_THRESHOLD = 0.600;
+const HIGH_THRESHOLD = 0.700;
 
-// Safe temporary value while Neon is being checked.
-// This will be replaced by the most recent real reading.
 let latestLevel = {
     station: "SYBC-001",
     level: 0.000,
     status: "Starting",
-    firmware: "",
     updated: "1970-01-01T00:00:00.000Z"
 };
+
+function calculateStatus(level) {
+
+    if (level < LOW_THRESHOLD) {
+        return "Low";
+    }
+
+    if (level > HIGH_THRESHOLD) {
+        return "High";
+    }
+
+    return "Normal";
+}
 
 async function initializeDatabase() {
 
     try {
 
-        // Check Neon connection
         await pool.query('SELECT NOW()');
         console.log('Neon database connected');
 
-        // Make sure the history table exists
         await pool.query(`
             CREATE TABLE IF NOT EXISTS level_history (
                 id BIGSERIAL PRIMARY KEY,
                 station TEXT NOT NULL,
                 level DOUBLE PRECISION NOT NULL,
                 status TEXT,
-                firmware TEXT,
                 updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
         `);
 
         console.log('level_history table ready');
 
-        // Load the most recent real reading from Neon
         const result = await pool.query(`
             SELECT
                 station,
@@ -59,41 +67,31 @@ async function initializeDatabase() {
 
         if (result.rows.length > 0) {
 
-            const LOW_THRESHOLD = 0.600;
-const HIGH_THRESHOLD = 0.700;
+            const row = result.rows[0];
 
-const level = Number(row.level);
+            const level = Number(row.level);
 
-let status = "Normal";
-let statusColor = "#28a745"; // Green
+            latestLevel = {
+                station: row.station,
+                level,
+                status: calculateStatus(level),
+                updated: new Date(row.updated).toISOString()
+            };
 
-if (level < LOW_THRESHOLD) {
-    status = "Low";
-    statusColor = "#007bff"; // Blue
-} else if (level > HIGH_THRESHOLD) {
-    status = "High";
-    statusColor = "#dc3545"; // Red
-}
+            console.log(
+                'Latest reading loaded from Neon:',
+                latestLevel
+            );
 
-latestLevel = {
-    station: row.station,
-    level,
-    status,
-    statusColor,
-    firmware: row.firmware || "",
-    updated: new Date(row.updated).toISOString()
-};
+        } else {
 
-
-        }
-        else {
-
-            console.log('No historical readings found in Neon');
+            console.log(
+                'No historical readings found in Neon'
+            );
 
         }
 
-    }
-    catch (err) {
+    } catch (err) {
 
         console.log(
             'Database initialization failed:',
@@ -263,11 +261,6 @@ app.get("/", (req, res) => {
     </div>
 
     <div class="card">
-        <h2>Firmware</h2>
-        <div class="detail" id="firmware">Loading...</div>
-    </div>
-
-    <div class="card">
         <h2>Last Updated</h2>
         <div class="detail" id="updated">Loading...</div>
     </div>
@@ -344,9 +337,6 @@ async function updateLevel() {
         document.getElementById('station').innerHTML =
             data.station || 'Unknown';
 
-        document.getElementById('firmware').innerHTML =
-            data.firmware || 'Unknown';
-
         const statusBox =
             document.getElementById('status');
 
@@ -365,24 +355,24 @@ async function updateLevel() {
                 'orange';
 
         }
-        else if (data.status === 'Normal') {
+       else if (data.status === 'Low') {
 
-            statusBox.innerHTML = 'Normal';
-            statusBox.style.color = '#00ff66';
+    statusBox.innerHTML = 'LOW';
+    statusBox.style.color = '#00aaff';
 
-        }
-        else if (data.status === 'Warning') {
+}
+else if (data.status === 'Normal') {
 
-            statusBox.innerHTML = 'Warning';
-            statusBox.style.color = '#ffb000';
+    statusBox.innerHTML = 'NORMAL';
+    statusBox.style.color = '#00ff66';
 
-        }
-        else if (data.status === 'Alarm') {
+}
+else if (data.status === 'High') {
 
-            statusBox.innerHTML = 'ALARM';
-            statusBox.style.color = '#ff4040';
+    statusBox.innerHTML = 'HIGH';
+    statusBox.style.color = '#ff4040';
 
-        }
+}
         else {
 
             statusBox.innerHTML =
@@ -652,29 +642,30 @@ window.addEventListener(
 // ESP32 uploads here
 app.post("/api/upload", async (req, res) => {
 
+    const level = Number(req.body.level);
+
     latestLevel = {
         station: req.body.station || "Unknown",
-        level: Number(req.body.level),
-        status: req.body.status || "Normal",
-        firmware: req.body.firmware || "",
+        level,
+        status: calculateStatus(level),
         updated: new Date().toISOString()
     };
 
-    levelHistory.push(latestLevel);
-
-    console.log("Upload received:", latestLevel);
+    console.log(
+        "Upload received:",
+        latestLevel
+    );
 
     try {
 
         await pool.query(
             `INSERT INTO level_history
-            (station, level, status, firmware, updated)
-            VALUES ($1, $2, $3, $4, $5)`,
+            (station, level, status, updated)
+            VALUES ($1, $2, $3, $4)`,
             [
                 latestLevel.station,
                 latestLevel.level,
                 latestLevel.status,
-                latestLevel.firmware,
                 latestLevel.updated
             ]
         );
@@ -685,48 +676,12 @@ app.post("/api/upload", async (req, res) => {
             success: true
         });
 
-    }
-    catch (err) {
+    } catch (err) {
 
-        console.log("Neon save failed:", err.message);
-
-        res.status(500).json({
-            success: false
-        });
-
-    }
-
-});
-
-// Latest data
-app.get("/api/latest", (req, res) => {
-
-    res.json(latestLevel);
-
-});   
-// Historical data
-app.get("/api/history", async (req, res) => {
-
-    try {
-
-        const result = await pool.query(`
-            SELECT
-                station,
-                level,
-                status,
-                firmware,
-                updated
-            FROM level_history
-            WHERE updated >= NOW() - INTERVAL '7 days'
-            ORDER BY updated ASC
-        `);
-
-        res.json(result.rows);
-
-    }
-    catch (err) {
-
-        console.log("History read failed:", err.message);
+        console.log(
+            "Neon save failed:",
+            err.message
+        );
 
         res.status(500).json({
             success: false
