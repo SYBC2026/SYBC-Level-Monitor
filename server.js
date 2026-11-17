@@ -651,11 +651,6 @@ app.post("/api/upload", async (req, res) => {
         updated: new Date().toISOString()
     };
 
-    console.log(
-        "Upload received:",
-        latestLevel
-    );
-
     try {
 
         await pool.query(
@@ -670,18 +665,49 @@ app.post("/api/upload", async (req, res) => {
             ]
         );
 
-        console.log("Reading saved to Neon");
-
-        res.json({
-            success: true
-        });
+        res.json({ success: true });
 
     } catch (err) {
 
-        console.log(
-            "Neon save failed:",
-            err.message
-        );
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+});
+
+// Latest data
+app.get("/api/latest", (req, res) => {
+
+    res.json(latestLevel);
+
+});
+
+// Historical data
+app.get("/api/history", async (req, res) => {
+
+    try {
+
+        const result = await pool.query(`
+            SELECT
+                station,
+                level,
+                status,
+                updated
+            FROM level_history
+            WHERE updated >= NOW() - INTERVAL '7 days'
+            ORDER BY updated ASC
+        `);
+
+        res.json(result.rows);
+
+    }
+    catch (err) {
+
+        console.log("History read failed:", err.message);
 
         res.status(500).json({
             success: false
